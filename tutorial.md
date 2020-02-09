@@ -18,8 +18,8 @@ type Query {
 }
 
 type Mutations {
-  increaseChosenQuantity: Boolean
-  decreaseChosenQuantity: Boolean
+  increaseChosenQuantity(input: ChangeProductQuantity!): Boolean
+  decreaseChosenQuantity(input: ChangeProductQuantity!): Boolean
 }
 
 extend type Character {
@@ -32,6 +32,10 @@ type ShoppingCart {
   totalPrice: Int!
   numActionFigures: Int!
 }
+
+input ChangeProductQuantity {
+  id: ID!
+}
 ```
 
 As with all Graphql schemas we have the two basic types: `Query` and `Mutation`.
@@ -40,7 +44,9 @@ Inside the `Query` type we added a `shoppingCart` query that will return a `Shop
 
 We also added two mutations: `increaseChosenQuantity` and `decreaseChosenQuantity`, that will change the quantity the user has chosen for an action figure and update the shopping cart.
 
-Finally we've extended the `Character` type from the Rick and Morty API to add two extra fields: `chosenQuantity` and `unitPrice` that will only exist in our local state.
+We extended the `Character` type from the Rick and Morty API to add two extra fields: `chosenQuantity` and `unitPrice` that will only exist in our local state.
+
+We created an `input` type called `ChangeProductQuantity` that will be used inside the mutations. Please note that we could send the characterId directly to the mutation, but we created the `input` type to illustrate its use. Also, a query or mutation can only accept `input` as its arguments. They do not support regular `types`.
 
 >Note: the exclamation mark (`!`) at the end of the types, indicates that they are obligatory, therefore they cannot be either null or undefined.
 
@@ -180,3 +186,7 @@ export const apolloClient = new ApolloClient({
 
 initLocalCache();
 ```
+
+## Mutation resolvers
+
+Now we are going to create mutations that will handle increasing and decreasing the quantity of a Character. First we should create a graphql file with the mutation itself.

@@ -3,8 +3,8 @@ type Query {
 }
 
 type Mutations {
-  increaseChosenQuantity: Boolean
-  decreaseChosenQuantity: Boolean
+  increaseChosenQuantity(input: ChangeProductQuantity!): Boolean
+  decreaseChosenQuantity(input: ChangeProductQuantity!): Boolean
 }
 
 extend type Character {
@@ -16,4 +16,8 @@ type ShoppingCart {
   id: ID!
   totalPrice: Int!
   numActionFigures: Int!
+}
+
+input ChangeProductQuantity {
+  id: ID!
 }
