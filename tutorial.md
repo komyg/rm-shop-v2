@@ -71,3 +71,112 @@ generates:
     plugins:
       - "fragment-matcher"
 ```
+
+## Creating an initial state
+
+When our application loads, we need to initialize the In Memory Cache with an initial state based on our local schema. To do this, let's add a function to the *config/apollo-local-cache.ts* file:
+
+```ts
+export function initLocalCache() {
+  localCache.writeData({
+    data: {
+      shoppingCart: {
+        __typename: 'ShoppingCart',
+        id: btoa('ShoppingCart:1'),
+        totalPrice: 0,
+        numActionFigures: 0,
+      },
+    },
+  });
+}
+```
+
+Here we are initializing the `ShoppingCart` objet with default values. Also note that we using an ID pattern of `[Typename]:[ID]` encoded in base 64, to guarantee that we will always have unique IDs in our cache.
+
+Also note that it if we chose not to initialize the `ShoppingCart` object, it would be better to set it as `null` instead of leaving it as `undefied` (`localCache.writeData({ data: { shoppingCart: null } })`). This is to avoid errors when running the `readQuery` function on the Apollo Cache. If the object we are querying is `undefined`, then the `readQuery` will throw an error, but if it is `null`, then it will return `null` without throwing an exception.
+
+Now lets call the `initLocalCache` function after the Apollo Client has been initialized in the *config/apollo-client.ts* file:
+
+```ts
+export const apolloClient = new ApolloClient({
+  link: ApolloLink.from([errorLink, httpLink]),
+  connectToDevTools: process.env.NODE_ENV !== 'production',
+  cache: localCache,
+  assumeImmutableResults: true,
+});
+
+initLocalCache();
+```
+
+# Creating resolvers
+
+The resolvers are functions that will manage our in memory cache, by reading data from it and writing data to it. If you are accustomed to Redux, the resolvers would be similar to the reducer functions, even though they are not required to be synchronous nor are the changes to the In Memory Cache required to be immutable, although we chose to use immutability in the part 1 in return for performance improvements.
+
+## Object resolvers
+
+The object resolvers are used to initialize the local fields of a remote type. In our case, we have extended the `Character` type with the `chosenQuantity` and `unitPrice` fields.
+
+To start, create the *src/resolvers* folder. Then create the *set-unit-price.resolver.ts* file and copy the contents below:
+
+```ts
+import ApolloClient from 'apollo-client';
+import { Character } from '../generated/graphql';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+
+export function setChosenQuantity(
+  root: Character,
+  variables: any,
+  context: { cache: InMemoryCache; getCacheKey: any; client: ApolloClient<any> },
+  info: any
+) {
+  switch (root.name) {
+    case 'Rick Sanchez':
+      return 10;
+
+    case 'Morty Smith':
+      return 10;
+
+    default:
+      return 5;
+  }
+}
+```
+
+This resolver will receive each character from the backend and assign a unit price based on the character name.
+
+Then, lets connect this resolver our client. To do this, create the file: *config/resolvers.ts* and paste the contents below:
+
+```ts
+import setUnitPrice from '../resolvers/set-unit-price.resolver';
+
+export const localResolvers = {
+  Character: {
+    chosenQuantity: () => 0,
+    unitPrice: setUnitPrice,
+  },
+};
+
+```
+
+Since the initial value for the `chosenQuantity` will always be 0, then we will just create a function that returns 0.
+
+Then, add the `localResolvers` to our client config in: *config/apollo-client.ts*.
+
+```ts
+import { ApolloClient } from 'apollo-client';
+import { ApolloLink } from 'apollo-link';
+import { httpLink } from './apollo-http-link';
+import { errorLink } from './apollo-error-lnk';
+import { localCache, initLocalCache } from './apollo-local-cache';
+import { localResolvers } from './apollo-resolvers';
+
+export const apolloClient = new ApolloClient({
+  link: ApolloLink.from([errorLink, httpLink]),
+  connectToDevTools: process.env.NODE_ENV !== 'production',
+  cache: localCache,
+  assumeImmutableResults: true,
+  resolvers: localResolvers,
+});
+
+initLocalCache();
+```
