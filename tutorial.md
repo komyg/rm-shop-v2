@@ -350,3 +350,95 @@ There is quite a bit happening in this resolver:
 - When using fragments, we use the `getCacheKey` function to get and object's cache key. By default, the Apollo client stores the data in a de-normalized fashion, so that we can use fragments and the cache key to access any object directly. Usually each cache key is composed as `__typename:id`, but it is a good practice to use the `getCacheKey` function in case you want to use a custom function to create the cache keys.
 - Notice that we are using the `readQuery` function to retrieve the current state of the shopping cart. We can do this, because we have set the initial state for the shopping cart, however if we had not set it, then this function would throw an exception the first time it ran, because the shopping cart would be `undefined`. If you do not want to set a definite state for a cache object, then it is good to set its initial state as `null`, instead of leaving it as undefined. This way, when you execute the `readQuery` function it will not throw an exception.
 - It is also worth mentioning, that we could use the `client.query` function instead of the `cache.readQuery`, this way we would not have to have had set the initial state for the shopping cart, because the `client.query` function does not throw an error if the object it wants to retrieve is `undefined`. However I think that the `cache.readQuery` is faster and it is also synchronous (which is useful in this context).
+
+Now we will create a new resolver to decrease the chosen quantity. Please create the file: *resolvers/decrease-chosen-quantity.resolver.ts* and copy and paste the contents below:
+
+```ts
+import ApolloClient from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import {
+  CharacterDataFragment,
+  CharacterDataFragmentDoc,
+  IncreaseChosenQuantityMutationVariables,
+  GetShoppingCartQuery,
+  GetShoppingCartDocument,
+} from '../generated/graphql';
+
+export default function decreaseChosenQuantity(
+  root: any,
+  variables: IncreaseChosenQuantityMutationVariables,
+  context: { cache: InMemoryCache; getCacheKey: any; client: ApolloClient<any> },
+  info: any
+) {
+  const character = getCharacterFromCache(variables.input.id, context.cache, context.getCacheKey);
+  if (!character) {
+    return false;
+  }
+
+  updateCharacter(character, context.cache, context.getCacheKey);
+  updateShoppingCart(character, context.cache);
+
+  return true;
+}
+
+function getCharacterFromCache(id: string, cache: InMemoryCache, getCacheKey: any) {
+  return cache.readFragment<CharacterDataFragment>({
+    fragment: CharacterDataFragmentDoc,
+    id: getCacheKey({ id, __typename: 'Character' }),
+  });
+}
+
+function updateCharacter(character: CharacterDataFragment, cache: InMemoryCache, getCacheKey: any) {
+  let quantity = character.chosenQuantity - 1;
+  if (quantity < 0) {
+    quantity = 0;
+  }
+
+  cache.writeFragment<CharacterDataFragment>({
+    fragment: CharacterDataFragmentDoc,
+    id: getCacheKey({ id: character.id, __typename: 'Character' }),
+    data: {
+      ...character,
+      chosenQuantity: quantity,
+    },
+  });
+}
+
+function updateShoppingCart(character: CharacterDataFragment, cache: InMemoryCache) {
+  const shoppingCart = getShoppingCart(cache);
+  if (!shoppingCart) {
+    return false;
+  }
+
+  let quantity = shoppingCart.numActionFigures - 1;
+  if (quantity < 0) {
+    quantity = 0;
+  }
+
+  let price = shoppingCart.totalPrice - character.unitPrice;
+  if (price < 0) {
+    price = 0;
+  }
+
+  cache.writeQuery<GetShoppingCartQuery>({
+    query: GetShoppingCartDocument,
+    data: {
+      shoppingCart: {
+        ...shoppingCart,
+        numActionFigures: quantity,
+        totalPrice: price,
+      },
+    },
+  });
+}
+
+function getShoppingCart(cache: InMemoryCache) {
+  const query = cache.readQuery<GetShoppingCartQuery>({
+    query: GetShoppingCartDocument,
+  });
+
+  return query?.shoppingCart;
+}
+```
+
+This resolver is very similar to the other one, with the exception that we do not allow the quantities and the total price to be less than 0.
