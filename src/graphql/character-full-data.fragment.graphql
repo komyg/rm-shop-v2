@@ -1,0 +1,13 @@
+fragment characterFullData on Character {
+  id
+  __typename
+  name
+  status
+  species
+  type
+  gender
+  image
+  created
+  unitPrice @client
+  chosenQuantity @client
+}

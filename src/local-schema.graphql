@@ -1,5 +1,6 @@
 type Query {
   shoppingCart: ShoppingCart!
+  getCharacter(id: ID!): Character
 }
 
 type Mutation {

@@ -130,6 +130,7 @@ export type Query = {
   characters?: Maybe<Characters>,
   episode?: Maybe<Episode>,
   episodes?: Maybe<Episodes>,
+  getCharacter?: Maybe<Character>,
   location?: Maybe<Location>,
   locations?: Maybe<Locations>,
   shoppingCart: ShoppingCart,
@@ -158,6 +159,11 @@ export type QueryEpisodesArgs = {
 };
 
 
+export type QueryGetCharacterArgs = {
+  id: Scalars['ID']
+};
+
+
 export type QueryLocationArgs = {
   id?: Maybe<Scalars['ID']>
 };
@@ -181,6 +187,11 @@ export type CharacterDataFragment = (
   & Pick<Character, 'id' | 'name' | 'unitPrice' | 'chosenQuantity'>
 );
 
+export type CharacterFullDataFragment = (
+  { __typename: 'Character' }
+  & Pick<Character, 'id' | 'name' | 'status' | 'species' | 'type' | 'gender' | 'image' | 'created' | 'unitPrice' | 'chosenQuantity'>
+);
+
 export type DecreaseChosenQuantityMutationVariables = {
   input: ChangeProductQuantity
 };
@@ -189,6 +200,19 @@ export type DecreaseChosenQuantityMutationVariables = {
 export type DecreaseChosenQuantityMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'decreaseChosenQuantity'>
+);
+
+export type GetCharacterQueryVariables = {
+  id: Scalars['ID']
+};
+
+
+export type GetCharacterQuery = (
+  { __typename?: 'Query' }
+  & { getCharacter: Maybe<(
+    { __typename?: 'Character' }
+    & CharacterFullDataFragment
+  )> }
 );
 
 export type GetCharactersQueryVariables = {};
@@ -242,6 +266,21 @@ export const CharacterDataFragmentDoc = gql`
   chosenQuantity @client
 }
     `;
+export const CharacterFullDataFragmentDoc = gql`
+    fragment characterFullData on Character {
+  id
+  __typename
+  name
+  status
+  species
+  type
+  gender
+  image
+  created
+  unitPrice @client
+  chosenQuantity @client
+}
+    `;
 export const DecreaseChosenQuantityDocument = gql`
     mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
   decreaseChosenQuantity(input: $input) @client
@@ -289,6 +328,56 @@ export function useDecreaseChosenQuantityMutation(baseOptions?: ApolloReactHooks
 export type DecreaseChosenQuantityMutationHookResult = ReturnType<typeof useDecreaseChosenQuantityMutation>;
 export type DecreaseChosenQuantityMutationResult = ApolloReactCommon.MutationResult<DecreaseChosenQuantityMutation>;
 export type DecreaseChosenQuantityMutationOptions = ApolloReactCommon.BaseMutationOptions<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables>;
+export const GetCharacterDocument = gql`
+    query GetCharacter($id: ID!) {
+  getCharacter(id: $id) @client {
+    ...characterFullData
+  }
+}
+    ${CharacterFullDataFragmentDoc}`;
+export type GetCharacterComponentProps = Omit<ApolloReactComponents.QueryComponentOptions<GetCharacterQuery, GetCharacterQueryVariables>, 'query'> & ({ variables: GetCharacterQueryVariables; skip?: boolean; } | { skip: boolean; });
+
+    export const GetCharacterComponent = (props: GetCharacterComponentProps) => (
+      <ApolloReactComponents.Query<GetCharacterQuery, GetCharacterQueryVariables> query={GetCharacterDocument} {...props} />
+    );
+    
+export type GetCharacterProps<TChildProps = {}> = ApolloReactHoc.DataProps<GetCharacterQuery, GetCharacterQueryVariables> & TChildProps;
+export function withGetCharacter<TProps, TChildProps = {}>(operationOptions?: ApolloReactHoc.OperationOption<
+  TProps,
+  GetCharacterQuery,
+  GetCharacterQueryVariables,
+  GetCharacterProps<TChildProps>>) {
+    return ApolloReactHoc.withQuery<TProps, GetCharacterQuery, GetCharacterQueryVariables, GetCharacterProps<TChildProps>>(GetCharacterDocument, {
+      alias: 'getCharacter',
+      ...operationOptions
+    });
+};
+
+/**
+ * __useGetCharacterQuery__
+ *
+ * To run a query within a React component, call `useGetCharacterQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCharacterQuery` returns an object from Apollo Client that contains loading, error, and data properties 
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCharacterQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetCharacterQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetCharacterQuery, GetCharacterQueryVariables>) {
+        return ApolloReactHooks.useQuery<GetCharacterQuery, GetCharacterQueryVariables>(GetCharacterDocument, baseOptions);
+      }
+export function useGetCharacterLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetCharacterQuery, GetCharacterQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<GetCharacterQuery, GetCharacterQueryVariables>(GetCharacterDocument, baseOptions);
+        }
+export type GetCharacterQueryHookResult = ReturnType<typeof useGetCharacterQuery>;
+export type GetCharacterLazyQueryHookResult = ReturnType<typeof useGetCharacterLazyQuery>;
+export type GetCharacterQueryResult = ApolloReactCommon.QueryResult<GetCharacterQuery, GetCharacterQueryVariables>;
 export const GetCharactersDocument = gql`
     query GetCharacters {
   characters {

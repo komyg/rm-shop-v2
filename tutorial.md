@@ -226,7 +226,7 @@ mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
 
 Finally, let's also create a fragment that will be useful for us to retrieve a single character directly from the cache. In Graphql fragment is a pice of code that can be reused in queries and mutations. It can also be used to retrieve and update data directly in the Apollo cache without having to go through the root query.
 
-This means that through our fragment below, we can get a single character using its `__typename` and `id` without having to create a query that would return an array with all the characters and force us to loop through it until we found what we were looking for.
+This means that through our fragment below, we can get a single character using its `__typename` and `id`. Note: we could also have used the `character(id: ID)` query that is available from the graphql server.
 
 Create the *graphq/character-data.fragment.graphql* file:
 
@@ -451,6 +451,96 @@ import increaseChosenQuantity from '../resolvers/increase-chosen-quantity.resolv
 import decreaseChosenQuantity from '../resolvers/decrease-chosen-quantity.resolver';
 
 export const localResolvers = {
+  Mutations: {
+    increaseChosenQuantity,
+    decreaseChosenQuantity,
+  },
+  Character: {
+    chosenQuantity: () => 0,
+    unitPrice: setUnitPrice,
+  },
+};
+```
+
+# Query resolvers
+
+Technically we won't be needing any query resolvers for this app, but I think that it might be useful to do an example. We are going to create a resolver that will return the data available for a character. Please note that on the real world we should use the `character(id: ID)` query that is already available from the server instead of creating a new query.
+
+To begin, update the `Query` type in our local schema:
+
+```graphql
+type Query {
+  shoppingCart: ShoppingCart!
+  getCharacter(id: ID!): Character
+}
+```
+
+Now, create a new file called: *graphql/get-character.query.graphql* and paste the contents below:
+
+```graphql
+query GetCharacter($id: ID!) {
+  getCharacter(id: $id) @client {
+    ...characterFullData
+  }
+}
+```
+
+And another file called: *graphql/character-full-data.fragment.graphql:
+
+```graphql
+fragment characterFullData on Character {
+  id
+  __typename
+  name
+  status
+  species
+  type
+  gender
+  image
+  created
+  unitPrice @client
+  chosenQuantity @client
+}
+```
+
+Now run this command: `yarn gen-graphql` to update our generated files.
+
+For the resolver itself, create a new file called: *resolvers/get-character.resolver.ts*:
+
+```ts
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import ApolloClient from 'apollo-client';
+import {
+  CharacterDataFragmentDoc,
+  CharacterFullDataFragment,
+  GetCharacterQueryVariables,
+} from '../generated/graphql';
+
+export default function getCharacter(
+  root: any,
+  variables: GetCharacterQueryVariables,
+  context: { cache: InMemoryCache; getCacheKey: any; client: ApolloClient<any> },
+  info: any
+) {
+  return context.cache.readFragment<CharacterFullDataFragment>({
+    fragment: CharacterDataFragmentDoc,
+    id: context.getCacheKey({ id: variables.id, __typename: 'Character' }),
+  });
+}
+```
+
+Finally let's connect this new resolver to the Apollo client. To this, update the *config/apollo-resolvers.ts* file:
+
+```ts
+import setUnitPrice from '../resolvers/set-unit-price.resolver';
+import increaseChosenQuantity from '../resolvers/increase-chosen-quantity.resolver';
+import decreaseChosenQuantity from '../resolvers/decrease-chosen-quantity.resolver';
+import getCharacter from '../resolvers/get-character.resolver';
+
+export const localResolvers = {
+  Query: {
+    getCharacter,
+  },
   Mutations: {
     increaseChosenQuantity,
     decreaseChosenQuantity,
