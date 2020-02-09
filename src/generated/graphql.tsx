@@ -176,6 +176,11 @@ export type ShoppingCart = {
 };
 
 
+export type CharacterDataFragment = (
+  { __typename: 'Character' }
+  & Pick<Character, 'id' | 'name' | 'unitPrice' | 'chosenQuantity'>
+);
+
 export type DecreaseChosenQuantityMutationVariables = {
   input: ChangeProductQuantity
 };
@@ -207,6 +212,17 @@ export type GetCharactersQuery = (
   )> }
 );
 
+export type GetShoppingCartQueryVariables = {};
+
+
+export type GetShoppingCartQuery = (
+  { __typename?: 'Query' }
+  & { shoppingCart: (
+    { __typename: 'ShoppingCart' }
+    & Pick<ShoppingCart, 'id' | 'totalPrice' | 'numActionFigures'>
+  ) }
+);
+
 export type IncreaseChosenQuantityMutationVariables = {
   input: ChangeProductQuantity
 };
@@ -217,7 +233,15 @@ export type IncreaseChosenQuantityMutation = (
   & Pick<Mutation, 'increaseChosenQuantity'>
 );
 
-
+export const CharacterDataFragmentDoc = gql`
+    fragment characterData on Character {
+  id
+  __typename
+  name
+  unitPrice @client
+  chosenQuantity @client
+}
+    `;
 export const DecreaseChosenQuantityDocument = gql`
     mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
   decreaseChosenQuantity(input: $input) @client
@@ -329,6 +353,58 @@ export function useGetCharactersLazyQuery(baseOptions?: ApolloReactHooks.LazyQue
 export type GetCharactersQueryHookResult = ReturnType<typeof useGetCharactersQuery>;
 export type GetCharactersLazyQueryHookResult = ReturnType<typeof useGetCharactersLazyQuery>;
 export type GetCharactersQueryResult = ApolloReactCommon.QueryResult<GetCharactersQuery, GetCharactersQueryVariables>;
+export const GetShoppingCartDocument = gql`
+    query GetShoppingCart {
+  shoppingCart @client {
+    id
+    __typename
+    totalPrice
+    numActionFigures
+  }
+}
+    `;
+export type GetShoppingCartComponentProps = Omit<ApolloReactComponents.QueryComponentOptions<GetShoppingCartQuery, GetShoppingCartQueryVariables>, 'query'>;
+
+    export const GetShoppingCartComponent = (props: GetShoppingCartComponentProps) => (
+      <ApolloReactComponents.Query<GetShoppingCartQuery, GetShoppingCartQueryVariables> query={GetShoppingCartDocument} {...props} />
+    );
+    
+export type GetShoppingCartProps<TChildProps = {}> = ApolloReactHoc.DataProps<GetShoppingCartQuery, GetShoppingCartQueryVariables> & TChildProps;
+export function withGetShoppingCart<TProps, TChildProps = {}>(operationOptions?: ApolloReactHoc.OperationOption<
+  TProps,
+  GetShoppingCartQuery,
+  GetShoppingCartQueryVariables,
+  GetShoppingCartProps<TChildProps>>) {
+    return ApolloReactHoc.withQuery<TProps, GetShoppingCartQuery, GetShoppingCartQueryVariables, GetShoppingCartProps<TChildProps>>(GetShoppingCartDocument, {
+      alias: 'getShoppingCart',
+      ...operationOptions
+    });
+};
+
+/**
+ * __useGetShoppingCartQuery__
+ *
+ * To run a query within a React component, call `useGetShoppingCartQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetShoppingCartQuery` returns an object from Apollo Client that contains loading, error, and data properties 
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetShoppingCartQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetShoppingCartQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetShoppingCartQuery, GetShoppingCartQueryVariables>) {
+        return ApolloReactHooks.useQuery<GetShoppingCartQuery, GetShoppingCartQueryVariables>(GetShoppingCartDocument, baseOptions);
+      }
+export function useGetShoppingCartLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetShoppingCartQuery, GetShoppingCartQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<GetShoppingCartQuery, GetShoppingCartQueryVariables>(GetShoppingCartDocument, baseOptions);
+        }
+export type GetShoppingCartQueryHookResult = ReturnType<typeof useGetShoppingCartQuery>;
+export type GetShoppingCartLazyQueryHookResult = ReturnType<typeof useGetShoppingCartLazyQuery>;
+export type GetShoppingCartQueryResult = ApolloReactCommon.QueryResult<GetShoppingCartQuery, GetShoppingCartQueryVariables>;
 export const IncreaseChosenQuantityDocument = gql`
     mutation IncreaseChosenQuantity($input: ChangeProductQuantity!) {
   increaseChosenQuantity(input: $input) @client

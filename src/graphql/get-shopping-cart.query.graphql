@@ -1,0 +1,8 @@
+query GetShoppingCart {
+  shoppingCart @client {
+    id
+    __typename
+    totalPrice
+    numActionFigures
+  }
+}

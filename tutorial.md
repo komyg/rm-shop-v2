@@ -187,6 +187,23 @@ export const apolloClient = new ApolloClient({
 initLocalCache();
 ```
 
+## Creating local queries
+
+Now we can create a new query that will return the `shoppingCart` object. To do this, create a new file called: *graphql/get-shopping-cart.query.graphql` and paste the contents below:
+
+```graphql
+query GetShoppingCart {
+  shoppingCart @client {
+    id
+    __typename
+    totalPrice
+    numActionFigures
+  }
+}
+```
+
+Now run the `yarn gen-graphql` command to generate its types. Notice that we can get the `shoppingCart` without having to create a resolver, because the `shoppingCart` object is a direct child of the root query.
+
 ## Mutation resolvers
 
 Now we are going to create mutations that will handle increasing and decreasing the quantity of a Character. First we should create a graphql file that will describe the mutation. Create the file: *graphql/increase-chosen-quantity.mutation.graphql* and paste the contents below:
@@ -207,4 +224,120 @@ mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
 }
 ```
 
-Now run the Graphql Code Gen command to update our generated file: `yarn gen-graphql`.
+Finally, let's also create a fragment that will be useful for us to retrieve a single character directly from the cache. In Graphql fragment is a pice of code that can be reused in queries and mutations. It can also be used to retrieve and update data directly in the Apollo cache without having to go through the root query.
+
+This means that through our fragment below, we can get a single character using its `__typename` and `id` without having to create a query that would return an array with all the characters and force us to loop through it until we found what we were looking for.
+
+Create the *graphq/character-data.fragment.graphql* file:
+
+```graphql
+fragment characterData on Character {
+  id
+  __typename
+  name
+  unitPrice @client
+  chosenQuantity @client
+}
+```
+
+Now run the Graphql Code Gen command to update our generated files: `yarn gen-graphql`. Then update the *config/apollo-local-cache.ts* with the fragment matcher:
+
+```ts
+import { InMemoryCache, IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
+import introspectionQueryResultData from '../generated/fragment-matcher.json';
+
+export const localCache = new InMemoryCache({
+  fragmentMatcher: new IntrospectionFragmentMatcher({ introspectionQueryResultData }),
+  freezeResults: true,
+});
+
+export function initLocalCache() {
+  localCache.writeData({
+    data: {
+      shoppingCart: {
+        __typename: 'ShoppingCart',
+        id: btoa('ShoppingCart:1'),
+        totalPrice: 0,
+        numActionFigures: 0,
+      },
+    },
+  });
+}
+```
+
+Once it ran, let's create the resolvers themselves.
+
+First create the *resolvers/increase-chosen-quantity.resolver.ts*:
+
+```ts
+import ApolloClient from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import {
+  CharacterDataFragment,
+  CharacterDataFragmentDoc,
+  IncreaseChosenQuantityMutationVariables,
+  GetShoppingCartQuery,
+  GetShoppingCartDocument,
+} from '../generated/graphql';
+
+export default function increaseChosenQuantity(
+  root: any,
+  variables: IncreaseChosenQuantityMutationVariables,
+  context: { cache: InMemoryCache; getCacheKey: any; client: ApolloClient<any> },
+  info: any
+) {
+  const character = getCharacterFromCache(variables.input.id, context.cache, context.getCacheKey);
+  if (!character) {
+    return false;
+  }
+
+  updateCharacter(character, context.cache, context.getCacheKey);
+  updateShoppingCart(character, context.cache);
+
+  return true;
+}
+
+function getCharacterFromCache(id: string, cache: InMemoryCache, getCacheKey: any) {
+  return cache.readFragment<CharacterDataFragment>({
+    fragment: CharacterDataFragmentDoc,
+    id: getCacheKey({ id, __typename: 'Character' }),
+  });
+}
+
+function updateCharacter(character: CharacterDataFragment, cache: InMemoryCache, getCacheKey: any) {
+  cache.writeFragment<CharacterDataFragment>({
+    fragment: CharacterDataFragmentDoc,
+    id: getCacheKey({ id: character.id, __typename: 'Character' }),
+    data: {
+      ...character,
+      chosenQuantity: character.chosenQuantity + 1,
+    },
+  });
+}
+
+function updateShoppingCart(character: CharacterDataFragment, cache: InMemoryCache) {
+  const shoppingCart = getShoppingCart(cache);
+  if (!shoppingCart) {
+    return false;
+  }
+
+  cache.writeQuery<GetShoppingCartQuery>({
+    query: GetShoppingCartDocument,
+    data: {
+      shoppingCart: {
+        ...shoppingCart,
+        numActionFigures: shoppingCart.numActionFigures + 1,
+        totalPrice: shoppingCart.totalPrice + character.unitPrice,
+      },
+    },
+  });
+}
+
+function getShoppingCart(cache: InMemoryCache) {
+  const query = cache.readQuery<GetShoppingCartQuery>({
+    query: GetShoppingCartDocument,
+  });
+
+  return query?.shoppingCart;
+}
+```

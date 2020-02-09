@@ -1,6 +1,8 @@
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { InMemoryCache, IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
+import introspectionQueryResultData from '../generated/fragment-matcher.json';
 
 export const localCache = new InMemoryCache({
+  fragmentMatcher: new IntrospectionFragmentMatcher({ introspectionQueryResultData }),
   freezeResults: true,
 });
 
