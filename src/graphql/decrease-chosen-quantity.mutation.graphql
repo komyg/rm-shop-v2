@@ -1,0 +1,3 @@
+mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
+  decreaseChosenQuantity(input: $input) @client
+}

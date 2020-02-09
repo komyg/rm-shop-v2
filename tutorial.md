@@ -17,7 +17,7 @@ type Query {
   shoppingCart: ShoppingCart!
 }
 
-type Mutations {
+type Mutation {
   increaseChosenQuantity(input: ChangeProductQuantity!): Boolean
   decreaseChosenQuantity(input: ChangeProductQuantity!): Boolean
 }
@@ -189,4 +189,22 @@ initLocalCache();
 
 ## Mutation resolvers
 
-Now we are going to create mutations that will handle increasing and decreasing the quantity of a Character. First we should create a graphql file with the mutation itself.
+Now we are going to create mutations that will handle increasing and decreasing the quantity of a Character. First we should create a graphql file that will describe the mutation. Create the file: *graphql/increase-chosen-quantity.mutation.graphql* and paste the contents below:
+
+```graphql
+mutation IncreaseChosenQuantity($input: ChangeProductQuantity!) {
+  increaseChosenQuantity(input: $input) @client
+}
+```
+
+Not that we are using the `@client` annotation here, to indicate that this mutation should be ran locally on our In Memory Cache.
+
+Also create another file: *graphql/decrease-chosen-quatity.mutation.graphql* and paste the contents below:
+
+```graphql
+mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
+  decreaseChosenQuantity(input: $input) @client
+}
+```
+
+Now run the Graphql Code Gen command to update our generated file: `yarn gen-graphql`.

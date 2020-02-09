@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
-import * as React from 'react';
 import * as ApolloReactCommon from '@apollo/react-common';
+import * as React from 'react';
 import * as ApolloReactComponents from '@apollo/react-components';
 import * as ApolloReactHoc from '@apollo/react-hoc';
 import * as ApolloReactHooks from '@apollo/react-hooks';
@@ -22,19 +22,25 @@ export enum CacheControlScope {
   Private = 'PRIVATE'
 }
 
+export type ChangeProductQuantity = {
+  id: Scalars['ID'],
+};
+
 export type Character = {
    __typename?: 'Character',
-  id?: Maybe<Scalars['ID']>,
-  name?: Maybe<Scalars['String']>,
-  status?: Maybe<Scalars['String']>,
-  species?: Maybe<Scalars['String']>,
-  type?: Maybe<Scalars['String']>,
-  gender?: Maybe<Scalars['String']>,
-  origin?: Maybe<Location>,
-  location?: Maybe<Location>,
-  image?: Maybe<Scalars['String']>,
-  episode?: Maybe<Array<Maybe<Episode>>>,
+  chosenQuantity: Scalars['Int'],
   created?: Maybe<Scalars['String']>,
+  episode?: Maybe<Array<Maybe<Episode>>>,
+  gender?: Maybe<Scalars['String']>,
+  id?: Maybe<Scalars['ID']>,
+  image?: Maybe<Scalars['String']>,
+  location?: Maybe<Location>,
+  name?: Maybe<Scalars['String']>,
+  origin?: Maybe<Location>,
+  species?: Maybe<Scalars['String']>,
+  status?: Maybe<Scalars['String']>,
+  type?: Maybe<Scalars['String']>,
+  unitPrice: Scalars['Int'],
 };
 
 export type Characters = {
@@ -102,14 +108,31 @@ export type Locations = {
   results?: Maybe<Array<Maybe<Location>>>,
 };
 
+export type Mutation = {
+   __typename?: 'Mutation',
+  increaseChosenQuantity?: Maybe<Scalars['Boolean']>,
+  decreaseChosenQuantity?: Maybe<Scalars['Boolean']>,
+};
+
+
+export type MutationIncreaseChosenQuantityArgs = {
+  input: ChangeProductQuantity
+};
+
+
+export type MutationDecreaseChosenQuantityArgs = {
+  input: ChangeProductQuantity
+};
+
 export type Query = {
    __typename?: 'Query',
   character?: Maybe<Character>,
   characters?: Maybe<Characters>,
-  location?: Maybe<Location>,
-  locations?: Maybe<Locations>,
   episode?: Maybe<Episode>,
   episodes?: Maybe<Episodes>,
+  location?: Maybe<Location>,
+  locations?: Maybe<Locations>,
+  shoppingCart: ShoppingCart,
 };
 
 
@@ -124,17 +147,6 @@ export type QueryCharactersArgs = {
 };
 
 
-export type QueryLocationArgs = {
-  id?: Maybe<Scalars['ID']>
-};
-
-
-export type QueryLocationsArgs = {
-  page?: Maybe<Scalars['Int']>,
-  filter?: Maybe<FilterLocation>
-};
-
-
 export type QueryEpisodeArgs = {
   id?: Maybe<Scalars['ID']>
 };
@@ -145,6 +157,34 @@ export type QueryEpisodesArgs = {
   filter?: Maybe<FilterEpisode>
 };
 
+
+export type QueryLocationArgs = {
+  id?: Maybe<Scalars['ID']>
+};
+
+
+export type QueryLocationsArgs = {
+  page?: Maybe<Scalars['Int']>,
+  filter?: Maybe<FilterLocation>
+};
+
+export type ShoppingCart = {
+   __typename?: 'ShoppingCart',
+  id: Scalars['ID'],
+  totalPrice: Scalars['Int'],
+  numActionFigures: Scalars['Int'],
+};
+
+
+export type DecreaseChosenQuantityMutationVariables = {
+  input: ChangeProductQuantity
+};
+
+
+export type DecreaseChosenQuantityMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'decreaseChosenQuantity'>
+);
 
 export type GetCharactersQueryVariables = {};
 
@@ -167,7 +207,64 @@ export type GetCharactersQuery = (
   )> }
 );
 
+export type IncreaseChosenQuantityMutationVariables = {
+  input: ChangeProductQuantity
+};
 
+
+export type IncreaseChosenQuantityMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'increaseChosenQuantity'>
+);
+
+
+export const DecreaseChosenQuantityDocument = gql`
+    mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
+  decreaseChosenQuantity(input: $input) @client
+}
+    `;
+export type DecreaseChosenQuantityMutationFn = ApolloReactCommon.MutationFunction<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables>;
+export type DecreaseChosenQuantityComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables>, 'mutation'>;
+
+    export const DecreaseChosenQuantityComponent = (props: DecreaseChosenQuantityComponentProps) => (
+      <ApolloReactComponents.Mutation<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables> mutation={DecreaseChosenQuantityDocument} {...props} />
+    );
+    
+export type DecreaseChosenQuantityProps<TChildProps = {}> = ApolloReactHoc.MutateProps<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables> & TChildProps;
+export function withDecreaseChosenQuantity<TProps, TChildProps = {}>(operationOptions?: ApolloReactHoc.OperationOption<
+  TProps,
+  DecreaseChosenQuantityMutation,
+  DecreaseChosenQuantityMutationVariables,
+  DecreaseChosenQuantityProps<TChildProps>>) {
+    return ApolloReactHoc.withMutation<TProps, DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables, DecreaseChosenQuantityProps<TChildProps>>(DecreaseChosenQuantityDocument, {
+      alias: 'decreaseChosenQuantity',
+      ...operationOptions
+    });
+};
+
+/**
+ * __useDecreaseChosenQuantityMutation__
+ *
+ * To run a mutation, you first call `useDecreaseChosenQuantityMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDecreaseChosenQuantityMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [decreaseChosenQuantityMutation, { data, loading, error }] = useDecreaseChosenQuantityMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useDecreaseChosenQuantityMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables>) {
+        return ApolloReactHooks.useMutation<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables>(DecreaseChosenQuantityDocument, baseOptions);
+      }
+export type DecreaseChosenQuantityMutationHookResult = ReturnType<typeof useDecreaseChosenQuantityMutation>;
+export type DecreaseChosenQuantityMutationResult = ApolloReactCommon.MutationResult<DecreaseChosenQuantityMutation>;
+export type DecreaseChosenQuantityMutationOptions = ApolloReactCommon.BaseMutationOptions<DecreaseChosenQuantityMutation, DecreaseChosenQuantityMutationVariables>;
 export const GetCharactersDocument = gql`
     query GetCharacters {
   characters {
@@ -232,6 +329,53 @@ export function useGetCharactersLazyQuery(baseOptions?: ApolloReactHooks.LazyQue
 export type GetCharactersQueryHookResult = ReturnType<typeof useGetCharactersQuery>;
 export type GetCharactersLazyQueryHookResult = ReturnType<typeof useGetCharactersLazyQuery>;
 export type GetCharactersQueryResult = ApolloReactCommon.QueryResult<GetCharactersQuery, GetCharactersQueryVariables>;
+export const IncreaseChosenQuantityDocument = gql`
+    mutation IncreaseChosenQuantity($input: ChangeProductQuantity!) {
+  increaseChosenQuantity(input: $input) @client
+}
+    `;
+export type IncreaseChosenQuantityMutationFn = ApolloReactCommon.MutationFunction<IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables>;
+export type IncreaseChosenQuantityComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables>, 'mutation'>;
+
+    export const IncreaseChosenQuantityComponent = (props: IncreaseChosenQuantityComponentProps) => (
+      <ApolloReactComponents.Mutation<IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables> mutation={IncreaseChosenQuantityDocument} {...props} />
+    );
+    
+export type IncreaseChosenQuantityProps<TChildProps = {}> = ApolloReactHoc.MutateProps<IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables> & TChildProps;
+export function withIncreaseChosenQuantity<TProps, TChildProps = {}>(operationOptions?: ApolloReactHoc.OperationOption<
+  TProps,
+  IncreaseChosenQuantityMutation,
+  IncreaseChosenQuantityMutationVariables,
+  IncreaseChosenQuantityProps<TChildProps>>) {
+    return ApolloReactHoc.withMutation<TProps, IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables, IncreaseChosenQuantityProps<TChildProps>>(IncreaseChosenQuantityDocument, {
+      alias: 'increaseChosenQuantity',
+      ...operationOptions
+    });
+};
+
+/**
+ * __useIncreaseChosenQuantityMutation__
+ *
+ * To run a mutation, you first call `useIncreaseChosenQuantityMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useIncreaseChosenQuantityMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [increaseChosenQuantityMutation, { data, loading, error }] = useIncreaseChosenQuantityMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useIncreaseChosenQuantityMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables>) {
+        return ApolloReactHooks.useMutation<IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables>(IncreaseChosenQuantityDocument, baseOptions);
+      }
+export type IncreaseChosenQuantityMutationHookResult = ReturnType<typeof useIncreaseChosenQuantityMutation>;
+export type IncreaseChosenQuantityMutationResult = ApolloReactCommon.MutationResult<IncreaseChosenQuantityMutation>;
+export type IncreaseChosenQuantityMutationOptions = ApolloReactCommon.BaseMutationOptions<IncreaseChosenQuantityMutation, IncreaseChosenQuantityMutationVariables>;
 
       export interface IntrospectionResultData {
         __schema: {

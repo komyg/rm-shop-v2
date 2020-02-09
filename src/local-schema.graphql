@@ -2,7 +2,7 @@ type Query {
   shoppingCart: ShoppingCart!
 }
 
-type Mutations {
+type Mutation {
   increaseChosenQuantity(input: ChangeProductQuantity!): Boolean
   decreaseChosenQuantity(input: ChangeProductQuantity!): Boolean
 }

@@ -15,7 +15,7 @@ generates:
       withHooks: true
 
   # Fragment Matcher
-  src/common/generated/fragment-matcher.json:
+  src/generated/fragment-matcher.json:
     schema: "./src/local-schema.graphql"
     plugins:
       - "fragment-matcher"
