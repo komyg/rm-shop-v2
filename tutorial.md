@@ -442,3 +442,22 @@ function getShoppingCart(cache: InMemoryCache) {
 ```
 
 This resolver is very similar to the other one, with the exception that we do not allow the quantities and the total price to be less than 0.
+
+Finally let's connect these two resolvers to the Apollo client, by updating the *config/apollo-resolvers.ts* file:
+
+```ts
+import setUnitPrice from '../resolvers/set-unit-price.resolver';
+import increaseChosenQuantity from '../resolvers/increase-chosen-quantity.resolver';
+import decreaseChosenQuantity from '../resolvers/decrease-chosen-quantity.resolver';
+
+export const localResolvers = {
+  Mutations: {
+    increaseChosenQuantity,
+    decreaseChosenQuantity,
+  },
+  Character: {
+    chosenQuantity: () => 0,
+    unitPrice: setUnitPrice,
+  },
+};
+```
