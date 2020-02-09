@@ -341,3 +341,12 @@ function getShoppingCart(cache: InMemoryCache) {
   return query?.shoppingCart;
 }
 ```
+
+There is quite a bit happening in this resolver:
+
+- First we have the `getCharacterFromCache` function that retrieves a character from the cache using the `CharacterData` fragment. This way we can retrieve the character directly.
+- Then we have the `updateCharacter` function that increases the chosen quantity for this character by one. Notice that we are using the same `CharacterData` fragment to update the Apollo cache and that we are not updating the character directly, instead we are using the spread operator to update the Apollo cache with a copy of the original character object. This is because we decided to use immutable objects.
+- Then we update the shopping cart, by using the `GetShoppingCartQuery` to get the current state of the shopping cart and update the number of chosen action figures and the total price. Here we can use a query to retrieve the shopping cart, because it is a child of the root query, so we can get it directly.
+- When using fragments, we use the `getCacheKey` function to get and object's cache key. By default, the Apollo client stores the data in a de-normalized fashion, so that we can use fragments and the cache key to access any object directly. Usually each cache key is composed as `__typename:id`, but it is a good practice to use the `getCacheKey` function in case you want to use a custom function to create the cache keys.
+- Notice that we are using the `readQuery` function to retrieve the current state of the shopping cart. We can do this, because we have set the initial state for the shopping cart, however if we had not set it, then this function would throw an exception the first time it ran, because the shopping cart would be `undefined`. If you do not want to set a definite state for a cache object, then it is good to set its initial state as `null`, instead of leaving it as undefined. This way, when you execute the `readQuery` function it will not throw an exception.
+- It is also worth mentioning, that we could use the `client.query` function instead of the `cache.readQuery`, this way we would not have to have had set the initial state for the shopping cart, because the `client.query` function does not throw an error if the object it wants to retrieve is `undefined`. However I think that the `cache.readQuery` is faster and it is also synchronous (which is useful in this context).
