@@ -151,7 +151,7 @@ import ApolloClient from 'apollo-client';
 import { Character } from '../generated/graphql';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
-export function setChosenQuantity(
+export default function setChosenQuantity(
   root: Character,
   variables: any,
   context: { cache: InMemoryCache; getCacheKey: any; client: ApolloClient<any> },
@@ -172,7 +172,7 @@ export function setChosenQuantity(
 
 This resolver will receive each character from the backend and assign it unit price based on the character's name.
 
-Then, lets connect this resolver our client. To do this, create the file: *config/resolvers.ts* and paste the contents below:
+Then, lets connect this resolver our client. To do this, create the file: *config/apollo-resolvers.ts* and paste the contents below:
 
 ```ts
 import setUnitPrice from '../resolvers/set-unit-price.resolver';
@@ -191,13 +191,6 @@ Since the initial value for the `chosenQuantity` will always be 0, then we will 
 Then, add the `localResolvers` to our client config in: *config/apollo-client.ts*.
 
 ```ts
-import { ApolloClient } from 'apollo-client';
-import { ApolloLink } from 'apollo-link';
-import { httpLink } from './apollo-http-link';
-import { errorLink } from './apollo-error-lnk';
-import { localCache, initLocalCache } from './apollo-local-cache';
-import { localResolvers } from './apollo-resolvers';
-
 export const apolloClient = new ApolloClient({
   link: ApolloLink.from([errorLink, httpLink]),
   connectToDevTools: process.env.NODE_ENV !== 'production',
