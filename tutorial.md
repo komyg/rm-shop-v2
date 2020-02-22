@@ -687,3 +687,85 @@ export default function CharacterData(props: Props): ReactElement {
 ```
 
 Now run our project using the `yarn start` command. You should see the unit price we set for each character (Rick and Mory should have a higher price than the others) and you should be able to increase and decrease each character's chosen quantity.
+
+# The Shopping Cart
+
+Now let's add a shopping cart button that will show the total price and the total number of action figures that were chosen by the user. To do this, create a new component: *components/shopping-cart-btn/shopping-cart-btn.tsx* and past the content below:
+
+```tsx
+import React, { ReactElement } from 'react';
+import { Fab, Box, makeStyles, createStyles, Theme, Typography } from '@material-ui/core';
+import { useGetShoppingCartQuery } from '../../generated/graphql';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      position: 'fixed',
+      bottom: theme.spacing(4),
+    },
+    quantityText: {
+      position: 'absolute',
+      top: '4px',
+      left: '50px',
+      color: 'white',
+    },
+    btnElement: {
+      padding: theme.spacing(1),
+    },
+  })
+);
+
+export default function ShoppingCartBtn(): ReactElement {
+  const classes = useStyles();
+  const { data } = useGetShoppingCartQuery();
+
+  if (!data || data.shoppingCart.numActionFigures <= 0) {
+    return <Box className={classes.root} />;
+  }
+
+  return (
+    <Box className={classes.root}>
+      <Fab variant='extended' color='primary'>
+        <Box>
+          <ShoppingCartIcon className={classes.btnElement} />
+          <Typography variant='caption' className={classes.quantityText}>
+            {data.shoppingCart.numActionFigures}
+          </Typography>
+        </Box>
+
+        <Typography className={classes.btnElement}>
+          {formatPrice(data.shoppingCart.totalPrice)}
+        </Typography>
+      </Fab>
+    </Box>
+  );
+}
+
+function formatPrice(price: number) {
+  return `US$ ${price.toFixed(2)}`;
+}
+```
+
+In this component we are using the `GetShoppingCart` query hook to get the number of action figures that the user selected and their total price. The state of the shopping cart is handled on the Apollo In Memory Cache and is updated whenever we increase or decrease the action figure's quantities by their respective reslvers.
+
+Notice that we didn't needed to create a resolver to get the shopping cart's state. That is because the shopping cart's state is available as a directy child of the root Query, therefore we can get it more easily.
+
+>Note: in the real world, this button would take the user to somekind of checkout screen in which he could review and place his order.
+
+Finally let's update our app component to contain our new shopping cart button. To do this, open the *components/app/app.tsx* file and add the `ShoppingCartBtn` component:
+
+```tsx
+export default function App(): ReactElement {
+  const classes = useStyles();
+
+  return (
+    <Container className={classes.root}>
+      <Box display='flex' justifyContent='center' alignContent='center'>
+        <CharacterTable />
+        <ShoppingCartBtn />
+      </Box>
+    </Container>
+  );
+}
+```
