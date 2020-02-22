@@ -82,7 +82,7 @@ generates:
       withHooks: true
 
   # Fragment Matcher
-  src/common/generated/fragment-matcher.json:
+  src/generated/fragment-matcher.json:
     schema: "./src/local-schema.graphql"
     plugins:
       - "fragment-matcher"
@@ -204,7 +204,7 @@ initLocalCache();
 
 ## Creating local queries
 
-Now we can create a new query that will return the `shoppingCart` object. To do this, create a new file called: *graphql/get-shopping-cart.query.graphql* and paste the contents below:
+Now we can create a new query that will return the `ShoppingCart` object. To do this, create a new file called: *graphql/get-shopping-cart.query.graphql* and paste the contents below:
 
 ```graphql
 query GetShoppingCart {
@@ -217,11 +217,11 @@ query GetShoppingCart {
 }
 ```
 
-Now run the `yarn gen-graphql` command to generate its types. Notice that we can get the `shoppingCart` without having to create a resolver, because the `shoppingCart` object is a direct child of the root query.
+Now run the `yarn gen-graphql` command to generate its types. Notice that we can get the `ShoppingCart` without having to create a resolver, because the `ShoppingCart` object is a direct child of the root query.
 
 ## Mutation resolvers
 
-Now we are going to create mutations that will handle increasing and decreasing the quantity of a Character. First we should create a graphql file that will describe the mutation. Create the file: *graphql/increase-chosen-quantity.mutation.graphql* and paste the contents below:
+Now we are going to create mutations that will handle increasing and decreasing the quantity of a `Character`. First we should create a graphql file that will describe the mutation. Create the file: *graphql/increase-chosen-quantity.mutation.graphql* and paste the contents below:
 
 ```graphql
 mutation IncreaseChosenQuantity($input: ChangeProductQuantity!) {
@@ -229,7 +229,7 @@ mutation IncreaseChosenQuantity($input: ChangeProductQuantity!) {
 }
 ```
 
-Not that we are using the `@client` annotation here, to indicate that this mutation should be ran locally on our In Memory Cache.
+Here we are using the `@client` annotation to indicate that this mutation should be ran locally on the `InMemoryCache`.
 
 Also create another file: *graphql/decrease-chosen-quatity.mutation.graphql* and paste the contents below:
 
@@ -239,11 +239,13 @@ mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
 }
 ```
 
-Finally, let's also create a fragment that will be useful for us to retrieve a single character directly from the cache. In Graphql fragment is a pice of code that can be reused in queries and mutations. It can also be used to retrieve and update data directly in the Apollo cache without having to go through the root query.
+Finally, let's also create a fragment that will be useful to retrieve a single `Character` directly from the cache. In Graphql a fragment is a pice of code that can be reused in queries and mutations. It can also be used to retrieve and update data directly in the Apollo's `InMemoryCache` without having to go through the root query.
 
-This means that through our fragment below, we can get a single character using its `__typename` and `id`. Note: we could also have used the `character(id: ID)` query that is available from the graphql server.
+This means that through the fragment below, we can get a single `Character` using its `__typename` and `id`.
 
-Create the *graphq/character-data.fragment.graphql* file:
+>Note: here we should have used the `character(id: ID)` query that is available in the graphql server, but I prefered to do this locally to demonstrate how it is done.
+
+Create the *graphql/character-data.fragment.graphql* file:
 
 ```graphql
 fragment characterData on Character {
@@ -280,9 +282,7 @@ export function initLocalCache() {
 }
 ```
 
-Once it ran, let's create the resolvers themselves.
-
-First create the *resolvers/increase-chosen-quantity.resolver.ts*:
+Now let's create the resolvers themselves. First create the *resolvers/increase-chosen-quantity.resolver.ts*:
 
 ```ts
 import ApolloClient from 'apollo-client';
@@ -357,16 +357,16 @@ function getShoppingCart(cache: InMemoryCache) {
 }
 ```
 
-There is quite a bit happening in this resolver:
+There is quite a bit happening here:
 
-- First we have the `getCharacterFromCache` function that retrieves a character from the cache using the `CharacterData` fragment. This way we can retrieve the character directly.
-- Then we have the `updateCharacter` function that increases the chosen quantity for this character by one. Notice that we are using the same `CharacterData` fragment to update the Apollo cache and that we are not updating the character directly, instead we are using the spread operator to update the Apollo cache with a copy of the original character object. This is because we decided to use immutable objects.
-- Then we update the shopping cart, by using the `GetShoppingCartQuery` to get the current state of the shopping cart and update the number of chosen action figures and the total price. Here we can use a query to retrieve the shopping cart, because it is a child of the root query, so we can get it directly.
-- When using fragments, we use the `getCacheKey` function to get and object's cache key. By default, the Apollo client stores the data in a de-normalized fashion, so that we can use fragments and the cache key to access any object directly. Usually each cache key is composed as `__typename:id`, but it is a good practice to use the `getCacheKey` function in case you want to use a custom function to create the cache keys.
-- Notice that we are using the `readQuery` function to retrieve the current state of the shopping cart. We can do this, because we have set the initial state for the shopping cart, however if we had not set it, then this function would throw an exception the first time it ran, because the shopping cart would be `undefined`. If you do not want to set a definite state for a cache object, then it is good to set its initial state as `null`, instead of leaving it as undefined. This way, when you execute the `readQuery` function it will not throw an exception.
-- It is also worth mentioning, that we could use the `client.query` function instead of the `cache.readQuery`, this way we would not have to have had set the initial state for the shopping cart, because the `client.query` function does not throw an error if the object it wants to retrieve is `undefined`. However I think that the `cache.readQuery` is faster and it is also synchronous (which is useful in this context).
+- First we have the `getCharacterFromCache` function that retrieves a `Character` from the cache using the `CharacterData` fragment. This way we can retrieve the character directly, instead of having to go through the root query.
+- Then we have the `updateCharacter` function that increases the chosen quantity for this character by one. Notice that we are using the same `CharacterData` fragment to update the cache and that we are not updating the character directly, instead we are using the spread operator to update the cache with a copy of the original `Character` object. We've done this, because we decided to use immutable objects.
+- Then we update the `ShoppingCart`, by using the `GetShoppingCartQuery` to get the current state of the `ShoppingCart` and update the number of chosen `Characters` and the total price. Here we can use a query to retrieve the `ShoppingCart`, because it is a child of the root query, so we can get it directly.
+- When using fragments, we use the `getCacheKey` function to get an object's cache key. By default, the Apollo Client stores the data in a de-normalized fashion, so that we can use fragments and the cache key to access any object directly. Usually each cache key is composed as `__typename:id`, but it is a good practice to use the `getCacheKey` function in case you want to use a custom function to create the cache keys.
+- Notice that we are using the `readQuery` function to retrieve the current state of the `ShoppingCart`. We can do this, because we have set the initial state for the shopping cart, however if we had not set it, then this function would throw an exception the first time it ran, because its result would be `undefined`. If you do not want to set a definite state for a cache object, then it is good to set its initial state as `null`, instead of leaving it as `undefined`. This way, when you execute the `readQuery` function it will not throw an exception.
+- It is also worth mentioning, that we could use the `client.query` function instead of the `cache.readQuery`, this way we would not have to worry about the `ShoppingCart` being `undefined`, because the `client.query` function does not throw an error if the object it wants to retrieve is `undefined`. However the `cache.readQuery` is faster and it is also synchronous (which is useful in this context).
 
-Now we will create a new resolver to decrease the chosen quantity. Please create the file: *resolvers/decrease-chosen-quantity.resolver.ts* and copy and paste the contents below:
+Now we will create a new resolver to decrease a `Character` chosen quantity. Please create the file: *resolvers/decrease-chosen-quantity.resolver.ts* and copy and paste the contents below:
 
 ```ts
 import ApolloClient from 'apollo-client';
@@ -479,7 +479,9 @@ export const localResolvers = {
 
 # Query resolvers
 
-Technically we won't be needing any query resolvers for this app, but I think that it might be useful to do an example. We are going to create a resolver that will return the data available for a character. Please note that on the real world we should use the `character(id: ID)` query that is already available from the server instead of creating a new query.
+Technically we won't be needing any query resolvers for this app, but I think that it might be useful to do an example.
+
+We are going to create a resolver that will return the data available for a character. Please note that on the real world we should use the `character(id: ID)` query that is already available from the server instead of creating a new query.
 
 To begin, update the `Query` type in our local schema:
 
