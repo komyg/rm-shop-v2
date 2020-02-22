@@ -747,7 +747,7 @@ function formatPrice(price: number) {
 }
 ```
 
-In this component we are using the `GetShoppingCart` query hook to get the number of action figures that the user selected and their total price. The state of the shopping cart is handled on the Apollo In Memory Cache and is updated whenever we increase or decrease the action figure's quantities by their respective reslvers.
+In this component we are using the `GetShoppingCart` query hook to get the number of action figures that the user selected and their total price. The state of the shopping cart is handled on the Apollo In Memory Cache and is updated whenever we increase or decrease the action figure's quantities by their respective reslvers. We are also hiding this component unti the customer has chosen at least one action figure.
 
 Notice that we didn't needed to create a resolver to get the shopping cart's state. That is because the shopping cart's state is available as a directy child of the root Query, therefore we can get it more easily.
 
