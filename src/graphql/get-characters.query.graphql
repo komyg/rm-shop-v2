@@ -5,6 +5,8 @@ query GetCharacters {
       __typename
       name
       species
+      chosenQuantity @client
+      unitPrice @client
       origin {
         id
         __typename

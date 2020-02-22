@@ -7,7 +7,7 @@ export const localResolvers = {
   Query: {
     getCharacter,
   },
-  Mutations: {
+  Mutation: {
     increaseChosenQuantity,
     decreaseChosenQuantity,
   },

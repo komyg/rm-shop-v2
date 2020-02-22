@@ -541,7 +541,7 @@ export const localResolvers = {
   Query: {
     getCharacter,
   },
-  Mutations: {
+  Mutation: {
     increaseChosenQuantity,
     decreaseChosenQuantity,
   },
@@ -551,3 +551,139 @@ export const localResolvers = {
   },
 };
 ```
+
+# Updating our components
+
+Now that we have created our mutations and resolvers we will update our components to use them. First let's update our `GetCharactersQuery` to include our new local fields. Open the *graphql/get-characters.query.graphql* file and paste the contents below:
+
+```graphql
+query GetCharacters {
+  characters {
+    results {
+      id
+      __typename
+      name
+      species
+      chosenQuantity @client
+      unitPrice @client
+      origin {
+        id
+        __typename
+        name
+      }
+      location {
+        id
+        __typename
+        name
+      }
+    }
+  }
+}
+```
+
+Notice that we added the `chosenQuantity` and `unitPrice` fields with the `@client` annotation indicating Apollo that these fields are used only on the client.
+
+Don't forget to regenerate our graphql types by running the `yarn gen-graphql` command on your console.
+
+Now let's update our table to add these new fields. First open the *components/character-table/charcater-table.tsx* file and add two more columns to our table, one for the unit price and the other for the chosen quantity.
+
+```tsx
+// Display the data
+return (
+  <TableContainer component={Paper}>
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell>Name</TableCell>
+          <TableCell>Species</TableCell>
+          <TableCell>Origin</TableCell>
+          <TableCell>Location</TableCell>
+          <TableCell>Price</TableCell>
+          <TableCell>Quantity</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {data.characters.results.map(character => (
+          <CharacterData character={character} key={character?.id!} />
+        ))}
+      </TableBody>
+    </Table>
+  </TableContainer>
+);
+```
+
+Now we are going to create a new component to handle the customer choices. First add the Material UI Icons package that will be used on the next component: `yarn add @material-ui/icons`. Then create the file: *components/character-quantity/character-quantity.tsx* and paste the contents below:
+
+```tsx
+import React, { ReactElement, useCallback } from 'react';
+import { Box, IconButton, Typography } from '@material-ui/core';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import {
+  useIncreaseChosenQuantityMutation,
+  useDecreaseChosenQuantityMutation,
+} from '../../generated/graphql';
+
+interface Props {
+  characterId: string;
+  chosenQuantity: number;
+}
+
+export default function CharacterQuantity(props: Props): ReactElement {
+  // Mutation Hooks
+  const [increaseQty] = useIncreaseChosenQuantityMutation({
+    variables: { input: { id: props.characterId } },
+  });
+  const [decreaseQty] = useDecreaseChosenQuantityMutation();
+
+  // Callbacks
+  const onIncreaseQty = useCallback(() => {
+    increaseQty();
+  }, [increaseQty]);
+  const onDecreaseQty = useCallback(() => {
+    decreaseQty({ variables: { input: { id: props.characterId } } });
+  }, [props.characterId, decreaseQty]);
+
+  return (
+    <Box display='flex' alignItems='center'>
+      <IconButton color='primary' disabled={props.chosenQuantity <= 0} onClick={onDecreaseQty}>
+        <ChevronLeftIcon />
+      </IconButton>
+      <Typography>{props.chosenQuantity}</Typography>
+      <IconButton color='primary' onClick={onIncreaseQty}>
+        <ChevronRightIcon />
+      </IconButton>
+    </Box>
+  );
+}
+```
+
+In this component we are using two hooks to instantiate our mutations and then we are using two callbacks to call them whenever the user clicks on the increase or decrease quantity buttons.
+
+You will notice that we've defined the input for the `IncreaseChosenQuantityMutation` when it was first intatiated and we've defined the input for the `decreaseChosenQuantityMutation` on the callback. Both options will work in this context, but it is worth saying that the input defined first option is static, and the input defined on the second option is dynamic. So, if we were working with a form for example, then you should go with the second option, otherwise your mutation will always be called with your form's initial values.
+
+Also there is no need to call another query here to get the character's chosen quantity, because this value already comes from the query we made in the `CharacterTable` component and it will be automatically updated by Apollo and passed down to this component when we fire the mutations.
+
+Now open the file: *compoents/character-data/character-data.tsx* and include our new fields:
+
+```tsx
+export default function CharacterData(props: Props): ReactElement {
+  return (
+    <TableRow>
+      <TableCell>{props.character?.name}</TableCell>
+      <TableCell>{props.character?.species}</TableCell>
+      <TableCell>{props.character?.origin?.name}</TableCell>
+      <TableCell>{props.character?.location?.name}</TableCell>
+      <TableCell>{props.character?.unitPrice}</TableCell>
+      <TableCell>
+        <CharacterQuantity
+          characterId={props.character?.id!}
+          chosenQuantity={props.character?.chosenQuantity!}
+        />
+      </TableCell>
+    </TableRow>
+  );
+}
+```
+
+Now run our project using the `yarn start` command. You should see the unit price we set for each character (Rick and Mory should have a higher price than the others) and you should be able to increase and decrease each character's chosen quantity.

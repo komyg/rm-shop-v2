@@ -224,7 +224,7 @@ export type GetCharactersQuery = (
     { __typename?: 'Characters' }
     & { results: Maybe<Array<Maybe<(
       { __typename: 'Character' }
-      & Pick<Character, 'id' | 'name' | 'species'>
+      & Pick<Character, 'id' | 'name' | 'species' | 'chosenQuantity' | 'unitPrice'>
       & { origin: Maybe<(
         { __typename: 'Location' }
         & Pick<Location, 'id' | 'name'>
@@ -386,6 +386,8 @@ export const GetCharactersDocument = gql`
       __typename
       name
       species
+      chosenQuantity @client
+      unitPrice @client
       origin {
         id
         __typename

@@ -45,6 +45,8 @@ export default function CharacterTable(props: Props): ReactElement {
             <TableCell>Species</TableCell>
             <TableCell>Origin</TableCell>
             <TableCell>Location</TableCell>
+            <TableCell>Price</TableCell>
+            <TableCell>Quantity</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
