@@ -2,11 +2,21 @@
 
 This is a three part tutorial series in which we will build a simple shopping cart app using React and [Apollo Graphql](https://www.apollographql.com/):
 
-- Part 1: Retrieve and display data from a remote server.
+- [Part 1: Retrieve and display data from a remote server.](https://dev.to/komyg/creating-an-app-using-react-and-apollo-graphql-1ine)
 - Part 2: Use Apollo to manage the app's local state.
-- Part 3: Add unit tests.
+- Part 3: Add unit tests (coming soon).
 
 On this second part we will create and manage the local application state using the Apollo In Memory Cache. Our objective is to allow the user to choose how many action figures from the Rick and Morty show he wants to buy and display a checkout screen with the total price and the summary of the chosen items.
+
+This tutorial builds on top of the code generated in the Part 1. [You can get it here](https://github.com/komyg/rm-shop-v1).
+
+The complete code for the Part 2 is available in [this repository](https://github.com/komyg/rm-shop-v2).
+
+>Note: this tutorial assumes that you have a working knowledge of React and Typescript.
+
+# Getting Started
+
+To begin, clone the [repository](https://github.com/komyg/rm-shop-v1) that we used on the [Part 1](https://dev.to/komyg/creating-an-app-using-react-and-apollo-graphql-1ine).
 
 # Creating a local schema
 
@@ -42,7 +52,7 @@ As with all Graphql schemas we have the two basic types: `Query` and `Mutation`.
 
 Inside the `Query` type we added a `shoppingCart` query that will return a `ShoppingCart` object that is stored locally on the Apollo In Memory Cache.
 
-We also added two mutations: `increaseChosenQuantity` and `decreaseChosenQuantity`, that will change the quantity the user has chosen for an action figure and update the shopping cart.
+We also added two mutations: `increaseChosenQuantity` and `decreaseChosenQuantity`. Both will change the quantity the user has chosen for an action figure and update the shopping cart.
 
 We extended the `Character` type from the Rick and Morty API to add two extra fields: `chosenQuantity` and `unitPrice` that will only exist in our local state.
 
@@ -189,7 +199,7 @@ initLocalCache();
 
 ## Creating local queries
 
-Now we can create a new query that will return the `shoppingCart` object. To do this, create a new file called: *graphql/get-shopping-cart.query.graphql` and paste the contents below:
+Now we can create a new query that will return the `shoppingCart` object. To do this, create a new file called: *graphql/get-shopping-cart.query.graphql* and paste the contents below:
 
 ```graphql
 query GetShoppingCart {
