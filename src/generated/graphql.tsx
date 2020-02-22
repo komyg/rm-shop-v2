@@ -187,11 +187,6 @@ export type CharacterDataFragment = (
   & Pick<Character, 'id' | 'name' | 'unitPrice' | 'chosenQuantity'>
 );
 
-export type CharacterFullDataFragment = (
-  { __typename: 'Character' }
-  & Pick<Character, 'id' | 'name' | 'status' | 'species' | 'type' | 'gender' | 'image' | 'created' | 'unitPrice' | 'chosenQuantity'>
-);
-
 export type DecreaseChosenQuantityMutationVariables = {
   input: ChangeProductQuantity
 };
@@ -211,7 +206,7 @@ export type GetCharacterQuery = (
   { __typename?: 'Query' }
   & { getCharacter: Maybe<(
     { __typename?: 'Character' }
-    & CharacterFullDataFragment
+    & CharacterDataFragment
   )> }
 );
 
@@ -224,7 +219,7 @@ export type GetCharactersQuery = (
     { __typename?: 'Characters' }
     & { results: Maybe<Array<Maybe<(
       { __typename: 'Character' }
-      & Pick<Character, 'id' | 'name' | 'species' | 'chosenQuantity' | 'unitPrice'>
+      & Pick<Character, 'id' | 'name' | 'image' | 'species' | 'chosenQuantity' | 'unitPrice'>
       & { origin: Maybe<(
         { __typename: 'Location' }
         & Pick<Location, 'id' | 'name'>
@@ -262,21 +257,6 @@ export const CharacterDataFragmentDoc = gql`
   id
   __typename
   name
-  unitPrice @client
-  chosenQuantity @client
-}
-    `;
-export const CharacterFullDataFragmentDoc = gql`
-    fragment characterFullData on Character {
-  id
-  __typename
-  name
-  status
-  species
-  type
-  gender
-  image
-  created
   unitPrice @client
   chosenQuantity @client
 }
@@ -331,10 +311,10 @@ export type DecreaseChosenQuantityMutationOptions = ApolloReactCommon.BaseMutati
 export const GetCharacterDocument = gql`
     query GetCharacter($id: ID!) {
   getCharacter(id: $id) @client {
-    ...characterFullData
+    ...characterData
   }
 }
-    ${CharacterFullDataFragmentDoc}`;
+    ${CharacterDataFragmentDoc}`;
 export type GetCharacterComponentProps = Omit<ApolloReactComponents.QueryComponentOptions<GetCharacterQuery, GetCharacterQueryVariables>, 'query'> & ({ variables: GetCharacterQueryVariables; skip?: boolean; } | { skip: boolean; });
 
     export const GetCharacterComponent = (props: GetCharacterComponentProps) => (
@@ -385,6 +365,7 @@ export const GetCharactersDocument = gql`
       id
       __typename
       name
+      image
       species
       chosenQuantity @client
       unitPrice @client

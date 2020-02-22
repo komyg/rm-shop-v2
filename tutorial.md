@@ -497,26 +497,8 @@ Now, create a new file called: *graphql/get-character.query.graphql* and paste t
 ```graphql
 query GetCharacter($id: ID!) {
   getCharacter(id: $id) @client {
-    ...characterFullData
+    ...characterData
   }
-}
-```
-
-And another file called: *graphql/character-full-data.fragment.graphql:
-
-```graphql
-fragment characterFullData on Character {
-  id
-  __typename
-  name
-  status
-  species
-  type
-  gender
-  image
-  created
-  unitPrice @client
-  chosenQuantity @client
 }
 ```
 
@@ -529,7 +511,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import ApolloClient from 'apollo-client';
 import {
   CharacterDataFragmentDoc,
-  CharacterFullDataFragment,
+  CharacterDataFragment,
   GetCharacterQueryVariables,
 } from '../generated/graphql';
 
@@ -539,11 +521,12 @@ export default function getCharacter(
   context: { cache: InMemoryCache; getCacheKey: any; client: ApolloClient<any> },
   info: any
 ) {
-  return context.cache.readFragment<CharacterFullDataFragment>({
+  return context.cache.readFragment<CharacterDataFragment>({
     fragment: CharacterDataFragmentDoc,
     id: context.getCacheKey({ id: variables.id, __typename: 'Character' }),
   });
 }
+
 ```
 
 Finally let's connect this new resolver to the Apollo client by updating the *config/apollo-resolvers.ts* file:

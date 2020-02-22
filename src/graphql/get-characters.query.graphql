@@ -4,6 +4,7 @@ query GetCharacters {
       id
       __typename
       name
+      image
       species
       chosenQuantity @client
       unitPrice @client
