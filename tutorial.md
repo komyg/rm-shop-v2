@@ -479,9 +479,9 @@ export const localResolvers = {
 
 # Query resolvers
 
-Technically we won't be needing any query resolvers for this app, but I think that it might be useful to do an example.
+Technically we won't be needing any query resolvers for this app, but I think that it might be useful to do an example. So we are going to create a resolver that will return the data available for a `Character`.
 
-We are going to create a resolver that will return the data available for a character. Please note that on the real world we should use the `character(id: ID)` query that is already available from the server instead of creating a new query.
+>Note that in a real project we should use the `character(id: ID)` query that is already available from the server instead of creating a new query.
 
 To begin, update the `Query` type in our local schema:
 
@@ -520,7 +520,7 @@ fragment characterFullData on Character {
 }
 ```
 
-Now run this command: `yarn gen-graphql` to update our generated files.
+Now re-genearate the graphql files with the command: `yarn gen-graphql`.
 
 For the resolver itself, create a new file called: *resolvers/get-character.resolver.ts*:
 
@@ -546,7 +546,7 @@ export default function getCharacter(
 }
 ```
 
-Finally let's connect this new resolver to the Apollo client. To this, update the *config/apollo-resolvers.ts* file:
+Finally let's connect this new resolver to the Apollo client by updating the *config/apollo-resolvers.ts* file:
 
 ```ts
 import setUnitPrice from '../resolvers/set-unit-price.resolver';
@@ -598,11 +598,11 @@ query GetCharacters {
 }
 ```
 
-Notice that we added the `chosenQuantity` and `unitPrice` fields with the `@client` annotation indicating Apollo that these fields are used only on the client.
+Here we added the `chosenQuantity` and `unitPrice` fields with the `@client` annotation to tell Apollo that these fields are used only on the client.
 
 Don't forget to regenerate our graphql types by running the `yarn gen-graphql` command on your console.
 
-Now let's update our table to add these new fields. First open the *components/character-table/charcater-table.tsx* file and add two more columns to our table, one for the unit price and the other for the chosen quantity.
+Now let's update our table to add these new fields. First open the *components/character-table/charcater-table.tsx* file and add two more columns to our table, one for the unit price and the other for the chosen quantity:
 
 ```tsx
 // Display the data
@@ -629,7 +629,7 @@ return (
 );
 ```
 
-Now we are going to create a new component to handle the customer choices. First add the Material UI Icons package that will be used on the next component: `yarn add @material-ui/icons`. Then create the file: *components/character-quantity/character-quantity.tsx* and paste the contents below:
+Now we are going to create a new component to handle the user's choices. First add the Material UI Icons package: `yarn add @material-ui/icons`. Then create the file: *components/character-quantity/character-quantity.tsx* and paste the contents below:
 
 ```tsx
 import React, { ReactElement, useCallback } from 'react';
@@ -677,11 +677,11 @@ export default function CharacterQuantity(props: Props): ReactElement {
 
 In this component we are using two hooks to instantiate our mutations and then we are using two callbacks to call them whenever the user clicks on the increase or decrease quantity buttons.
 
-You will notice that we've defined the input for the `IncreaseChosenQuantityMutation` when it was first intatiated and we've defined the input for the `decreaseChosenQuantityMutation` on the callback. Both options will work in this context, but it is worth saying that the input defined first option is static, and the input defined on the second option is dynamic. So, if we were working with a form for example, then you should go with the second option, otherwise your mutation will always be called with your form's initial values.
+You will notice that we've set the input for the `useIncreaseChosenQuantityMutation` when it was first intatiated and that we've set the input for the `useDecreaseChosenQuantityMutation` on the callback. Both options will work in this context, but it is worth saying that the input defined on the first mutation is static, and the input defined on the second mutation is dynamic. So, if we were working with a form for example, then we should have chosen to set the mutation's input when it is called not when it is first intantiated, otherwise it will always be called with our form's initial values.
 
 Also there is no need to call another query here to get the character's chosen quantity, because this value already comes from the query we made in the `CharacterTable` component and it will be automatically updated by Apollo and passed down to this component when we fire the mutations.
 
-Now open the file: *compoents/character-data/character-data.tsx* and include our new fields:
+Now open the file: *components/character-data/character-data.tsx* and include our new fields:
 
 ```tsx
 export default function CharacterData(props: Props): ReactElement {
@@ -707,7 +707,7 @@ Now run our project using the `yarn start` command. You should see the unit pric
 
 # The Shopping Cart
 
-Now let's add a shopping cart button that will show the total price and the total number of action figures that were chosen by the user. To do this, create a new component: *components/shopping-cart-btn/shopping-cart-btn.tsx* and past the content below:
+Now let's add a shopping cart component that will show the total price and the total number of characters that were chosen by the user. To do this, create a new component: *components/shopping-cart-btn/shopping-cart-btn.tsx* and paste the content below:
 
 ```tsx
 import React, { ReactElement } from 'react';
@@ -764,13 +764,13 @@ function formatPrice(price: number) {
 }
 ```
 
-In this component we are using the `GetShoppingCart` query hook to get the number of action figures that the user selected and their total price. The state of the shopping cart is handled on the Apollo In Memory Cache and is updated whenever we increase or decrease the action figure's quantities by their respective reslvers. We are also hiding this component unti the customer has chosen at least one action figure.
+In this component we are using the `useGetShoppingCart` query hook to get the number of characters that the user selected and the total price. The state of the `ShoppingCart` is handled on the Apollo `InMemoryCache` and is updated whenever we increase or decrease the character's quantities by their respective reslvers. We are also hiding this component until the customer has chosen at least one character.
 
 Notice that we didn't needed to create a resolver to get the shopping cart's state. That is because the shopping cart's state is available as a directy child of the root Query, therefore we can get it more easily.
 
->Note: in the real world, this button would take the user to somekind of checkout screen in which he could review and place his order.
+>Note: in a real project, this button would take the user to some kind of checkout screen in which he would be able to review and place his order.
 
-Finally let's update our app component to contain our new shopping cart button. To do this, open the *components/app/app.tsx* file and add the `ShoppingCartBtn` component:
+Finally let's update our app component to contain our new button. To do this, open the *components/app/app.tsx* file and add the `ShoppingCartBtn` component:
 
 ```tsx
 export default function App(): ReactElement {
@@ -789,4 +789,4 @@ export default function App(): ReactElement {
 
 # Conclusion
 
-If all goes well, when you run our app you should be able to increase and decrease the desired quantity of action figures and see the total number and total price of the chosen products.
+If all goes well, when you run our app you should be able to increase and decrease the desired quantity of characters and see the total number and total price of the chosen products.
