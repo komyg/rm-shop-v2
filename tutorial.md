@@ -769,3 +769,7 @@ export default function App(): ReactElement {
   );
 }
 ```
+
+# Conclusion
+
+If all goes well, when you run our app you should be able to increase and decrease the desired quantity of action figures and see the total number and total price of the chosen products.
