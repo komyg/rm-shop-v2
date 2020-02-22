@@ -18,6 +18,8 @@ The complete code for the Part 2 is available in [this repository](https://githu
 
 To begin, clone the [repository](https://github.com/komyg/rm-shop-v1) that we used on the [Part 1](https://dev.to/komyg/creating-an-app-using-react-and-apollo-graphql-1ine).
 
+After you cloned the repository, run `yarn install` to download the necessary packages.
+
 # Creating a local schema
 
 First we will create a local schema to extend the properties that we have on the Rick and Morty API and create new ones. To do this, create a new file called: *local-schema.graphql* inside the *src* folder and paste the code below:
@@ -48,17 +50,15 @@ input ChangeProductQuantity {
 }
 ```
 
-As with all Graphql schemas we have the two basic types: `Query` and `Mutation`.
+Here is the breakdown our local schema:
 
-Inside the `Query` type we added a `shoppingCart` query that will return a `ShoppingCart` object that is stored locally on the Apollo In Memory Cache.
+- As with all Graphql schemas we have the two basic types: `Query` and `Mutation`.
+- Inside the `Query` type we added a `shoppingCart` query that will return a `ShoppingCart` object that is stored locally on the Apollo In Memory Cache.
+- We also added two mutations: `increaseChosenQuantity` and `decreaseChosenQuantity`. Both will change the quantity the user has chosen for an action figure and update the shopping cart.
+- We extended the `Character` type from the Rick and Morty API to add two extra fields: `chosenQuantity` and `unitPrice` that will only exist in our local state.
+- We created an `input` type called `ChangeProductQuantity` that will be used inside the mutations. Note that we could send the `characterId` directly to the mutation, but we created the `input` type to illustrate its use. Also, a query or mutation can only accept a `scalar` or an `input` types as its arguments. They do not support regular `types`.
 
-We also added two mutations: `increaseChosenQuantity` and `decreaseChosenQuantity`. Both will change the quantity the user has chosen for an action figure and update the shopping cart.
-
-We extended the `Character` type from the Rick and Morty API to add two extra fields: `chosenQuantity` and `unitPrice` that will only exist in our local state.
-
-We created an `input` type called `ChangeProductQuantity` that will be used inside the mutations. Please note that we could send the characterId directly to the mutation, but we created the `input` type to illustrate its use. Also, a query or mutation can only accept `input` as its arguments. They do not support regular `types`.
-
->Note: the exclamation mark (`!`) at the end of the types, indicates that they are obligatory, therefore they cannot be either null or undefined.
+>Note: the exclamation mark (`!`) at the end of the types, indicates that they are obligatory, therefore they cannot be null or undefined.
 
 ## Updating the Grapqhql Codegen config file
 
@@ -90,7 +90,7 @@ generates:
 
 ## Creating an initial state
 
-When our application loads, we need to initialize the In Memory Cache with an initial state based on our local schema. To do this, let's add a function to the *config/apollo-local-cache.ts* file:
+When our application loads, it is good to initialize Apollo's `InMemoryCache` with an initial state based on our local schema. To do this, let's add the `initLocalCache` function to the *config/apollo-local-cache.ts* file:
 
 ```ts
 export function initLocalCache() {
@@ -107,9 +107,21 @@ export function initLocalCache() {
 }
 ```
 
-Here we are initializing the `ShoppingCart` objet with default values. Also note that we using an ID pattern of `[Typename]:[ID]` encoded in base 64, to guarantee that we will always have unique IDs in our cache.
+Here we are initializing the `ShoppingCart` objet with default values. Also note that we using an ID pattern of `[Typename]:[ID]` encoded in base 64. You can use this or any other parttern you like for the ID's as long as they are always unique.
 
-Also note that it if we chose not to initialize the `ShoppingCart` object, it would be better to set it as `null` instead of leaving it as `undefied` (`localCache.writeData({ data: { shoppingCart: null } })`). This is to avoid errors when running the `readQuery` function on the Apollo Cache. If the object we are querying is `undefined`, then the `readQuery` will throw an error, but if it is `null`, then it will return `null` without throwing an exception.
+Also note that it if we chose not to initialize the `ShoppingCart` object, it would be better to set it as `null` instead of leaving it as `undefied`. This is to avoid errors when running the `readQuery` function on the Apollo's `InMemoryCache`. If the object we are querying is `undefined`, then the `readQuery` will throw an error, but if it is `null`, then it will return `null` without throwing an exception.
+
+Initializing the `ShoppingCart` to `null` would look like this:
+
+```tsx
+// Don't forget that in this tutorial we want to have the shoppingCart initialized, so don't copy and paste the code below
+export function initLocalCache() {
+  localCache.writeData({
+    data: {
+      shoppingCart: null,
+  });
+}
+```
 
 Now lets call the `initLocalCache` function after the Apollo Client has been initialized in the *config/apollo-client.ts* file:
 
@@ -126,11 +138,11 @@ initLocalCache();
 
 # Creating resolvers
 
-The resolvers are functions that will manage our in memory cache, by reading data from it and writing data to it. If you are accustomed to Redux, the resolvers would be similar to the reducer functions, even though they are not required to be synchronous nor are the changes to the In Memory Cache required to be immutable, although we chose to use immutability in the part 1 in return for performance improvements.
+Resolvers are functions that will manage our local `InMemoryCache`, by reading data from it and writing data to it. If you are accustomed to Redux, the resolvers would be similar to the reducer functions, even though they are not required to be synchronous nor are the changes to the `InMemoryCache` required to be immutable, although we chose to use immutability in the [Part 1](https://dev.to/komyg/creating-an-app-using-react-and-apollo-graphql-1ine) of this tutorial in return for performance improvements.
 
-## Object resolvers
+## Type resolvers
 
-The object resolvers are used to initialize the local fields of a remote type. In our case, we have extended the `Character` type with the `chosenQuantity` and `unitPrice` fields.
+Type resolvers are used to initialize the local fields of a remote type. In our case, we have extended the `Character` type with the `chosenQuantity` and `unitPrice` fields.
 
 To start, create the *src/resolvers* folder. Then create the *set-unit-price.resolver.ts* file and copy the contents below:
 
@@ -158,7 +170,7 @@ export function setChosenQuantity(
 }
 ```
 
-This resolver will receive each character from the backend and assign a unit price based on the character name.
+This resolver will receive each character from the backend and assign it unit price based on the character's name.
 
 Then, lets connect this resolver our client. To do this, create the file: *config/resolvers.ts* and paste the contents below:
 
