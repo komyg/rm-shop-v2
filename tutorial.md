@@ -4,7 +4,7 @@ This is a three part tutorial series in which we will build a simple shopping ca
 
 - [Part 1: Retrieve and display data from a remote server.](https://dev.to/komyg/creating-an-app-using-react-and-apollo-graphql-1ine)
 - [Part 2: Use Apollo to manage the app's local state.](https://dev.to/komyg/use-apollo-to-manage-the-app-s-local-state-167f)
-- Part 3: Add unit tests (coming soon).
+- [Part 3: Add unit tests.](https://dev.to/komyg/unit-tests-with-enzyme-and-apollo-graphql-5e7p)
 
 On this second part we will create and manage the local application state using the Apollo In Memory Cache. Our objective is to allow the user to choose how many action figures from the Rick and Morty show he wants to buy and display a checkout screen with the total price and the summary of the chosen items.
 
@@ -107,9 +107,9 @@ export function initLocalCache() {
 }
 ```
 
-Here we are initializing the `ShoppingCart` objet with default values. Also note that we using an ID pattern of `[Typename]:[ID]` encoded in base 64. You can use this or any other parttern you like for the ID's as long as they are always unique.
+Here we are initializing the `ShoppingCart` objet with default values. Also note that we using an ID pattern of `[Typename]:[ID]` encoded in base 64. You can use this or any other pattern you like for the ID's as long as they are always unique.
 
-Also note that it if we chose not to initialize the `ShoppingCart` object, it would be better to set it as `null` instead of leaving it as `undefied`. This is to avoid errors when running the `readQuery` function on the Apollo's `InMemoryCache`. If the object we are querying is `undefined`, then the `readQuery` will throw an error, but if it is `null`, then it will return `null` without throwing an exception.
+Also note that it if we chose not to initialize the `ShoppingCart` object, it would be better to set it as `null` instead of leaving it as `undefined`. This is to avoid errors when running the `readQuery` function on the Apollo's `InMemoryCache`. If the object we are querying is `undefined`, then the `readQuery` will throw an error, but if it is `null`, then it will return `null` without throwing an exception.
 
 Initializing the `ShoppingCart` to `null` would look like this:
 
@@ -231,7 +231,7 @@ mutation IncreaseChosenQuantity($input: ChangeProductQuantity!) {
 
 Here we are using the `@client` annotation to indicate that this mutation should be ran locally on the `InMemoryCache`.
 
-Also create another file: *graphql/decrease-chosen-quatity.mutation.graphql* and paste the contents below:
+Also create another file: *graphql/decrease-chosen-quantity.mutation.graphql* and paste the contents below:
 
 ```graphql
 mutation DecreaseChosenQuantity($input: ChangeProductQuantity!) {
@@ -243,7 +243,7 @@ Finally, let's also create a fragment that will be useful to retrieve a single `
 
 This means that through the fragment below, we can get a single `Character` using its `__typename` and `id`.
 
->Note: here we should have used the `character(id: ID)` query that is available in the graphql server, but I prefered to do this locally to demonstrate how it is done.
+>Note: here we should have used the `character(id: ID)` query that is available in the graphql server, but I preferred to do this locally to demonstrate how it is done.
 
 Create the *graphql/character-data.fragment.graphql* file:
 
@@ -503,7 +503,7 @@ query GetCharacter($id: ID!) {
 }
 ```
 
-Now re-genearate the graphql files with the command: `yarn gen-graphql`.
+Now re-generate the graphql files with the command: `yarn gen-graphql`.
 
 For the resolver itself, create a new file called: *resolvers/get-character.resolver.ts*:
 
@@ -588,7 +588,7 @@ Here we added the `chosenQuantity` and `unitPrice` fields with the `@client` ann
 
 Don't forget to regenerate our graphql types by running the `yarn gen-graphql` command on your console.
 
-Now let's update our table to add these new fields. First open the *components/character-table/charcater-table.tsx* file and add two more columns to our table, one for the unit price and the other for the chosen quantity:
+Now let's update our table to add these new fields. First open the *components/character-table/character-table.tsx* file and add two more columns to our table, one for the unit price and the other for the chosen quantity:
 
 ```tsx
 // Display the data
@@ -676,7 +676,7 @@ export default function CharacterQuantity(props: Props): ReactElement {
 
 In this component we are using two hooks to instantiate our mutations and then we are using two callbacks to call them whenever the user clicks on the increase or decrease quantity buttons.
 
-You will notice that we've set the input for the `useIncreaseChosenQuantityMutation` when it was first intatiated and that we've set the input for the `useDecreaseChosenQuantityMutation` on the callback. Both options will work in this context, but it is worth saying that the input defined on the first mutation is static, and the input defined on the second mutation is dynamic. So, if we were working with a form for example, then we should have chosen to set the mutation's input when it is called not when it is first intantiated, otherwise it will always be called with our form's initial values.
+You will notice that we've set the input for the `useIncreaseChosenQuantityMutation` when it was first instantiated and that we've set the input for the `useDecreaseChosenQuantityMutation` on the callback. Both options will work in this context, but it is worth saying that the input defined on the first mutation is static, and the input defined on the second mutation is dynamic. So, if we were working with a form for example, then we should have chosen to set the mutation's input when it is called not when it is first instantiated, otherwise it will always be called with our form's initial values.
 
 Also there is no need to call another query here to get the character's chosen quantity, because this value already comes from the query we made in the `CharacterTable` component and it will be automatically updated by Apollo and passed down to this component when we fire the mutations.
 
@@ -772,9 +772,9 @@ function formatPrice(price: number) {
 }
 ```
 
-In this component we are using the `useGetShoppingCart` query hook to get the number of characters that the user selected and the total price. The state of the `ShoppingCart` is handled on the Apollo `InMemoryCache` and is updated whenever we increase or decrease the character's quantities by their respective reslvers. We are also hiding this component until the customer has chosen at least one character.
+In this component we are using the `useGetShoppingCart` query hook to get the number of action figures that the user selected and the total price. The state of the `ShoppingCart` is handled on the Apollo `InMemoryCache` and is updated whenever we increase or decrease the action figure's quantities by their respective resolvers. We are also hiding this component until the customer has chosen at least one action figure.
 
-Notice that we didn't needed to create a resolver to get the shopping cart's state. That is because the shopping cart's state is available as a directy child of the root Query, therefore we can get it more easily.
+Notice that we didn't needed to create a resolver to get the shopping cart's state. That is because the shopping cart's state is available as a direct child of the root Query, therefore we can get it more easily.
 
 >Note: in a real project, this button would take the user to some kind of checkout screen in which he would be able to review and place his order.
 
@@ -797,4 +797,4 @@ export default function App(): ReactElement {
 
 # Conclusion
 
-If all goes well, when you run our app you should be able to increase and decrease the desired quantity of characters and see the total number and total price of the chosen products.
+If all goes well, when you run our app you should be able to increase and decrease the desired quantity of action figures and see the total number and total price of the chosen products.
