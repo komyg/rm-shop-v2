@@ -711,7 +711,7 @@ export default function CharacterData(props: Props): ReactElement {
 }
 ```
 
-Now run our project using the `yarn start` command. You should see the unit price we set for each character (Rick and Mory should have a higher price than the others) and you should be able to increase and decrease each character's chosen quantity.
+Now run our project using the `yarn start` command. You should see the unit price we set for each character (Rick and Morty should have a higher price than the others) and you should be able to increase and decrease each character's chosen quantity.
 
 # The Shopping Cart
 
