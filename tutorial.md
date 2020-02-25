@@ -1,6 +1,6 @@
 # Part 2: Managing the Local State with Apollo
 
-This is a three part tutorial series in which we will build a simple shopping cart app using React and [Apollo Graphql](https://www.apollographql.com/):
+This is a three part tutorial series in which we will build a simple shopping cart app using React and [Apollo Graphql](https://www.apollographql.com/). The idea is to build a table in which the user can choose which Rick and Morty action figures he wants to buy.
 
 - [Part 1: Retrieve and display data from a remote server.](https://dev.to/komyg/creating-an-app-using-react-and-apollo-graphql-1ine)
 - [Part 2: Use Apollo to manage the app's local state.](https://dev.to/komyg/use-apollo-to-manage-the-app-s-local-state-167f)
@@ -715,7 +715,7 @@ Now run our project using the `yarn start` command. You should see the unit pric
 
 # The Shopping Cart
 
-Now let's add a shopping cart component that will show the total price and the total number of characters that were chosen by the user. To do this, create a new component: *components/shopping-cart-btn/shopping-cart-btn.tsx* and paste the content below:
+Now let's add a shopping cart component that will show the total price and the total number of action figures that were chosen by the user. To do this, create a new component: *components/shopping-cart-btn/shopping-cart-btn.tsx* and paste the content below:
 
 ```tsx
 import React, { ReactElement } from 'react';
