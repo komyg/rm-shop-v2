@@ -560,10 +560,12 @@ Now that we have created our mutations and resolvers we will update our componen
 ```graphql
 query GetCharacters {
   characters {
+    __typename
     results {
       id
       __typename
       name
+      image
       species
       chosenQuantity @client
       unitPrice @client
@@ -595,12 +597,24 @@ return (
     <Table>
       <TableHead>
         <TableRow>
-          <TableCell>Name</TableCell>
-          <TableCell>Species</TableCell>
-          <TableCell>Origin</TableCell>
-          <TableCell>Location</TableCell>
-          <TableCell>Price</TableCell>
-          <TableCell>Quantity</TableCell>
+          <TableCell>
+            <strong>Name</strong>
+          </TableCell>
+          <TableCell>
+            <strong>Species</strong>
+          </TableCell>
+          <TableCell>
+            <strong>Origin</strong>
+          </TableCell>
+          <TableCell>
+            <strong>Location</strong>
+          </TableCell>
+          <TableCell>
+            <strong>Price</strong>
+          </TableCell>
+          <TableCell>
+            <strong>Quantity</strong>
+          </TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -610,6 +624,7 @@ return (
       </TableBody>
     </Table>
   </TableContainer>
+);
 );
 ```
 
@@ -669,9 +684,18 @@ Now open the file: *components/character-data/character-data.tsx* and include ou
 
 ```tsx
 export default function CharacterData(props: Props): ReactElement {
+  const classes = useStyles();
+
   return (
     <TableRow>
-      <TableCell>{props.character?.name}</TableCell>
+      <TableCell className={classes.nameTableCell}>
+        <Box>
+          <img src={props.character?.image!} alt='' className={classes.characterImg} />
+        </Box>
+        <Typography variant='body2' className={classes.characterName}>
+          {props.character?.name}
+        </Typography>
+      </TableCell>
       <TableCell>{props.character?.species}</TableCell>
       <TableCell>{props.character?.origin?.name}</TableCell>
       <TableCell>{props.character?.location?.name}</TableCell>

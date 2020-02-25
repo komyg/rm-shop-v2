@@ -16,7 +16,6 @@ export type Scalars = {
   Upload: any,
 };
 
-
 export enum CacheControlScope {
   Public = 'PUBLIC',
   Private = 'PRIVATE'
@@ -216,7 +215,7 @@ export type GetCharactersQueryVariables = {};
 export type GetCharactersQuery = (
   { __typename?: 'Query' }
   & { characters: Maybe<(
-    { __typename?: 'Characters' }
+    { __typename: 'Characters' }
     & { results: Maybe<Array<Maybe<(
       { __typename: 'Character' }
       & Pick<Character, 'id' | 'name' | 'image' | 'species' | 'chosenQuantity' | 'unitPrice'>
@@ -361,6 +360,7 @@ export type GetCharacterQueryResult = ApolloReactCommon.QueryResult<GetCharacter
 export const GetCharactersDocument = gql`
     query GetCharacters {
   characters {
+    __typename
     results {
       id
       __typename

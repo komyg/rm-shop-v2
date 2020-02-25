@@ -23,7 +23,6 @@ export default function CharacterTable(props: Props): ReactElement {
   if (loading) {
     return <CircularProgress />;
   } else if (error) {
-    console.error(error);
     return (
       <Typography variant='h5'>
         Error retrieving data, please reload the page to try again.
@@ -41,12 +40,24 @@ export default function CharacterTable(props: Props): ReactElement {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Species</TableCell>
-            <TableCell>Origin</TableCell>
-            <TableCell>Location</TableCell>
-            <TableCell>Price</TableCell>
-            <TableCell>Quantity</TableCell>
+            <TableCell>
+              <strong>Name</strong>
+            </TableCell>
+            <TableCell>
+              <strong>Species</strong>
+            </TableCell>
+            <TableCell>
+              <strong>Origin</strong>
+            </TableCell>
+            <TableCell>
+              <strong>Location</strong>
+            </TableCell>
+            <TableCell>
+              <strong>Price</strong>
+            </TableCell>
+            <TableCell>
+              <strong>Quantity</strong>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
