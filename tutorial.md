@@ -1,10 +1,10 @@
-# Part 2: Managing the Local State with Apollo
+# Part 2: Use Apollo to manage the app's local state
 
 This is a three part tutorial series in which we will build a simple shopping cart app using React and [Apollo Graphql](https://www.apollographql.com/). The idea is to build a table in which the user can choose which Rick and Morty action figures he wants to buy.
 
 - [Part 1: Retrieve and display data from a remote server.](https://dev.to/komyg/creating-an-app-using-react-and-apollo-graphql-1ine)
 - [Part 2: Use Apollo to manage the app's local state.](https://dev.to/komyg/use-apollo-to-manage-the-app-s-local-state-167f)
-- [Part 3: Add unit tests.](https://dev.to/komyg/unit-tests-with-enzyme-and-apollo-graphql-5e7p)
+- [Part 3: Unit Tests with Enzyme and Apollo Graphql](https://dev.to/komyg/unit-tests-with-enzyme-and-apollo-graphql-5e7p)
 
 On this second part we will create and manage the local application state using the Apollo In Memory Cache. Our objective is to allow the user to choose how many action figures from the Rick and Morty show he wants to buy and display a checkout screen with the total price and the summary of the chosen items.
 
