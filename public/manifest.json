@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "rm-shop-v2",
+  "name": "Rick and Morty Shop V1",
   "icons": [
     {
       "src": "favicon.ico",

@@ -10,7 +10,7 @@ On this second part we will create and manage the local application state using 
 
 This tutorial builds on top of the code generated in the Part 1. [You can get it here](https://github.com/komyg/rm-shop-v1).
 
-The complete code for the Part 2 is available in [this repository](https://github.com/komyg/rm-shop-v2).
+The complete code for the Part 2 is available in [this repository](https://github.com/komyg/rm-shop-v2) and the website here: https://komyg.github.io/rm-shop-v2/.
 
 >Note: this tutorial assumes that you have a working knowledge of React and Typescript.
 
